@@ -13,7 +13,7 @@
 
 ## 💿 다운로드 및 설치 방법 (일반 사용자용)
 
-1. 우측의 **[Releases](https://github.com/본인아이디/menubar-todo/releases)** 탭에서 최신 버전의 `.dmg` 파일을 다운로드합니다.
+1. 우측의 **[Releases](https://github.com/jmh0106/Simple-Menubar-Todo/releases)** 탭에서 최신 버전의 `.dmg` 파일을 다운로드합니다.
 2. 다운로드한 `.dmg` 파일을 더블클릭하여 엽니다.
 3. 창이 나타나면 **Menubar Todo** 앱 아이콘을 우측의 **Applications(응용 프로그램)** 폴더로 드래그 앤 드롭합니다.
 4. Launchpad 또는 응용 프로그램 폴더에서 앱을 실행합니다.
@@ -31,7 +31,7 @@
 **1. 저장소 클론 및 패키지 설치**
 
 ```bash
-git clone [https://github.com/jmh0106/Simple-Menubar-Todo](https://github.com/jmh0106/Simple-Menubar-Todo)
+git clone https://github.com/jmh0106/Simple-Menubar-Todo
 cd menubar-todo
 npm install
 ```
