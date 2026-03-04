@@ -1,0 +1,19 @@
+# Node 패키지
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# 맥OS 시스템 파일
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# 빌드 결과물 (나중에 배포용으로 뽑아낸 앱이 저장될 폴더)
+dist/
+build/
+out/
+release/
+
+# 환경 변수 및 개인 설정 파일
+.env
+.env.local

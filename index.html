@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>메뉴바 투두</title>
+  <style>
+    :root {
+      --bg-color: #f9f9f9;
+      --text-color: #333;
+      --item-bg: #ffffff;
+      --border-color: #ccc;
+      --shadow: rgba(0,0,0,0.1);
+    }
+    body.dark-mode {
+      --bg-color: #1e1e1e;
+      --text-color: #f9f9f9;
+      --item-bg: #2d2d2d;
+      --border-color: #444;
+      --shadow: rgba(0,0,0,0.5);
+    }
+    body {
+      font-family: '-apple-system', 'BlinkMacSystemFont', 'Apple SD Gothic Neo', sans-serif;
+      margin: 0;
+      padding: 15px;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      border-radius: 10px;
+      transition: background-color 0.4s ease, color 0.4s ease;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    h2 { margin: 0; font-size: 16px; }
+    .header-buttons { display: flex; gap: 10px; }
+    
+    #theme-toggle, #settings-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 18px;
+      padding: 0;
+      outline: none; 
+      transition: transform 0.3s ease;
+    }
+    #theme-toggle:hover { transform: scale(1.2) rotate(15deg); }
+    #settings-btn:hover { transform: rotate(90deg); }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      box-sizing: border-box;
+      margin-bottom: 15px;
+      border: 1px solid var(--border-color);
+      background-color: var(--item-bg);
+      color: var(--text-color);
+      border-radius: 6px;
+      transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+      outline: none;
+    }
+    input:focus { border-color: #007aff; }
+
+    ul { list-style: none; padding: 0; margin: 0; }
+    li {
+      background: var(--item-bg);
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      border-radius: 6px;
+      box-shadow: 0 1px 3px var(--shadow);
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between; 
+      align-items: center;
+      transition: background-color 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    .delete-btn {
+      background: none;
+      border: none;
+      color: #ff5252;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 14px;
+      padding: 0 5px;
+      border-radius: 4px;
+      outline: none;
+      transition: background-color 0.2s, color 0.2s;
+    }
+    .delete-btn:hover { background-color: #ffeaea; color: #ff0000; }
+    body.dark-mode .delete-btn:hover { background-color: #4a1c1c; }
+  </style>
+</head>
+<body>
+  
+  <div class="header">
+    <h2>오늘의 할 일</h2>
+    <div class="header-buttons">
+      <button id="theme-toggle" title="다크모드 전환">🌙</button>
+      <button id="settings-btn" title="설정">⚙️</button>
+    </div>
+  </div>
+  
+  <input type="text" id="todoInput" placeholder="할 일을 입력하고 엔터를 누르세요">
+  <ul id="todoList"></ul>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+
+    const input = document.getElementById('todoInput');
+    const list = document.getElementById('todoList');
+    const themeToggle = document.getElementById('theme-toggle');
+    const settingsBtn = document.getElementById('settings-btn');
+
+    // 🌟 1. 데이터 불러오기 (Todos & Theme)
+    let todos = ipcRenderer.sendSync('get-todos');
+    const savedTheme = ipcRenderer.sendSync('get-theme');
+
+    // 🌟 2. 불러온 데이터 화면에 그리기
+    todos.forEach(todoText => {
+      addTodoToDOM(todoText);
+    });
+
+    if (savedTheme === 'dark') {
+      document.body.classList.add('dark-mode');
+      themeToggle.textContent = '☀️';
+    }
+
+    // 🌟 3. 앱 창이 열릴 때마다 입력창에 포커스 주기
+    window.addEventListener('focus', () => {
+      input.focus();
+    });
+
+    // 버튼 이벤트 모음
+    settingsBtn.addEventListener('click', () => {
+      ipcRenderer.send('open-settings');
+    });
+
+    themeToggle.addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+      const isDark = document.body.classList.contains('dark-mode');
+      themeToggle.textContent = isDark ? '☀️' : '🌙';
+      
+      // 바뀐 테마 저장
+      ipcRenderer.send('save-theme', isDark ? 'dark' : 'light');
+    });
+
+    // 화면에 투두를 추가하는 함수
+    function addTodoToDOM(text) {
+      const li = document.createElement('li');
+      const span = document.createElement('span');
+      span.textContent = text;
+      
+      const deleteBtn = document.createElement('button');
+      deleteBtn.textContent = '✕';
+      deleteBtn.className = 'delete-btn';
+      
+      deleteBtn.addEventListener('click', () => {
+        li.remove();
+        // 배열에서 삭제하고 업데이트된 목록 저장
+        todos = todos.filter(t => t !== text);
+        ipcRenderer.send('save-todos', todos);
+      });
+
+      li.appendChild(span);
+      li.appendChild(deleteBtn);
+      list.appendChild(li);
+    }
+
+    // 엔터키 입력 시 투두 추가 및 저장
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && input.value.trim() !== '') {
+        const text = input.value.trim();
+        addTodoToDOM(text);
+        
+        // 배열에 추가하고 업데이트된 목록 저장
+        todos.push(text);
+        ipcRenderer.send('save-todos', todos);
+        
+        input.value = '';
+      }
+    });
+  </script>
+</body>
+</html>
