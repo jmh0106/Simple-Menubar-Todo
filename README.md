@@ -31,7 +31,7 @@
 **1. 저장소 클론 및 패키지 설치**
 
 ```bash
-git clone [https://github.com/본인아이디/menubar-todo.git](https://github.com/본인아이디/menubar-todo.git)
+git clone [https://github.com/jmh0106/Simple-Menubar-Todo](https://github.com/jmh0106/Simple-Menubar-Todo)
 cd menubar-todo
 npm install
 ```
